@@ -284,24 +284,35 @@ def _selectfeature(featureselection,df):
 
 def obtainNewData(featureselection):
 
+    df = pd.read_csv('./data/data-addxz.csv')
+    columns = df.columns
     dd = pd.read_csv('./csv/dd.csv')
-    dd = _selectfeature(featureselection,dd)
-    ddValue = dd.values
+    dd.drop(dd.index[0],inplace=True)
+    dd.drop(dd.columns[[0]],axis=1,inplace=True)
+    dd.columns = columns
+    #dd = _selectfeature(featureselection,dd)
+    #ddValue = dd.values
     #m_ddValue, n_ddvalue = ddValue.shape
     #ddValue= ddValue[:, 0: n_ddvalue - 1]
-    ydd = np.zeros(len(ddValue))
+    ydd = np.zeros(len(dd))
 
     nn = pd.read_csv('./csv/nn.csv')
-    nn = _selectfeature(featureselection, nn)
-    nnValue = nn.values
+    nn.drop(nn.index[0],inplace=True)
+    nn.drop(nn.columns[[0]], axis=1, inplace=True)
+    nn.columns = columns
+    #nn = _selectfeature(featureselection, nn)
+    #nnValue = nn.values
     #m_nnValue, n_nnvalue = nnValue.shape
     #nnValue= nnValue[:, 0: n_nnvalue - 1]
-    ynn = np.ones(len(nnValue))
-
-    newtrain = np.vstack((ddValue, nnValue))
+    ynn = np.ones(len(nn))
+    nndd = pd.concat([dd,nn])
+    nv = _selectfeature(featureselection, nndd)
+    # newtrain = nv.values
+    #newtrain = np.vstack((ddValue, nnValue))
     newlabel = np.append(ydd, ynn)
+    nv['label']  = newlabel
 
-    return newtrain,newlabel
+    return nv
 
 def test_predictknn(trainValue,labels,testValue):
     neigh =KNeighborsClassifier(n_neighbors=3)
