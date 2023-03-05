@@ -19,10 +19,15 @@ class Data:
         self.opt = opt
 
     def getFormatIndustryFeatures(self,dataset):
+        """
+
+        :param dataset:
+        :return:
+        """
         # trainNormal, test = obtainFeature(file_path)
         # dataset = pd.read_csv(file_path)
         # dataset = dataset.values
-        dataset = self._preData(dataset)
+        # dataset = self._preData(dataset)
         m, n = dataset.shape
 
         samples = dataset[:, 0:n - 1]
@@ -43,14 +48,18 @@ class Data:
 
     def finalObtainFeatures(self):
         df = pd.read_csv(self.opt.file)
+        columns = df.columns
+        newx = self._preData(df)
+        newdf = pd.DataFrame(newx,columns=columns)
         df_case = pd.read_csv(self.opt.filelabel)
-        df['label'] = df_case['label']
-        dd = df[df['label'] == 0]
+
+        newdf['label'] = df_case['label']
+        dd = newdf[newdf['label'] == 0]
         dd = dd.values
 
         # process malware
 
-        nn = df[df['label'] == 1]
+        nn = newdf[newdf['label'] == 1]
         # malware = malware.drop('Target')
         nn = nn.values
         # malware = np.delete(malware, -1, axis=1)
