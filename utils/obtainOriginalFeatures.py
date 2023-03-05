@@ -76,21 +76,8 @@ class OriginalFeatures:
 
         return train_normal
 
-    def featureSelect(self,x):
-        '''
-        Frist,we normalize x,then use VarianceThreshold obtain features needed.
-        :param x:
-        :return: array:VarianceThreshold_feature
-        '''
-        sel = VarianceThreshold(threshold=0.005)
-        x_new = sel.fit_transform(x)
-        x_new = self._preData(x_new)
-
-
-        return x_new
-
 if __name__ == '__main__':
-    utils = OriginalFeatures('../data/8yue','../data/TCIA_LGG_cases_159.csv',isToCsv=True)
+    utils = OriginalFeatures('../data/others','../data/TCIA_cases.csv',isToCsv=True)
     utils.obtianFeatures()
 
     utils.deleteExtaFeature()
