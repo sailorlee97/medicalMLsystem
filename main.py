@@ -8,6 +8,9 @@
 @Software: PyCharm
 """
 import os
+
+from sklearn.metrics import classification_report
+
 from modelTrainTest import trainModel
 from options import Options
 from superised import obtainNewData
@@ -70,8 +73,14 @@ def runmodel(num_folds,inputs, targets,no_epochs):
 
         print(f'Score for fold {fold_no}: {model.metrics_names[0]} of {scores[0]}; {model.metrics_names[1]} of {scores[1] * 100}%')
         y_pred = model.predict(inputs[test], batch_size=100)
+
         predict_label = np.argmax(y_pred, axis=1)
-        plot_conf(predict_label,  targets[test], ['1p/19q-codeleted', '1p/19q-nocodeleted'])
+
+        # 或者
+        y_t = np.argmax(targets[test], axis=-1)
+        # y_t = keras.utils.to_categorical(predict_label, 2)
+        # plot_conf(predict_label,y_t,['1p/19q-codeleted', '1p/19q-nocodeleted'])
+        print(classification_report(y_t, predict_label, digits=4))
         acc_per_fold.append(scores[1] * 100)
 
         # Increase fold number
@@ -80,6 +89,15 @@ def runmodel(num_folds,inputs, targets,no_epochs):
     return acc_per_fold
 
 if __name__ == '__main__':
+    import tensorflow as tf
+    import keras.backend as KTF
+
+    config = tf.compat.v1.ConfigProto()
+    config.gpu_options.allow_growth = True  # 不全部占满显存, 按需分配
+    config.gpu_options.per_process_gpu_memory_fraction = 0.6  # 限制GPU内存占用率
+    sess = tf.compat.v1.Session(config=config)
+    KTF.set_session(sess)  # 设置session
+
     opt = Options().parse()
     if os.path.exists('./csv/dd.csv') & os.path.exists('./csv/nn.csv'):
 
@@ -100,3 +118,5 @@ if __name__ == '__main__':
             obtainnewfeatures(opt, nn_dl, 9)
         else:
             obtainnewfeatures(opt, dd_dl, 9)
+
+#  e = 0.988  sigma = 0.00221    [e-2*sigma,e+2*sigma]90%   [e-1*sigma,e+1*sigma]95%   0.988 [0.987,0.99]
