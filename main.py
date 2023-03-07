@@ -9,7 +9,7 @@
 """
 import os
 
-from sklearn.metrics import classification_report
+from sklearn.metrics import classification_report,roc_auc_score
 
 from modelTrainTest import trainModel
 from options import Options
@@ -69,6 +69,7 @@ def runmodel(num_folds,inputs, targets,no_epochs):
                             epochs=no_epochs,
                             verbose=1)
         scores = model.evaluate(inputs[test], targets[test], verbose=0)
+
         # scores = model.evaluate(x_test, y_t, verbose=1)
 
         print(f'Score for fold {fold_no}: {model.metrics_names[0]} of {scores[0]}; {model.metrics_names[1]} of {scores[1] * 100}%')
@@ -78,6 +79,8 @@ def runmodel(num_folds,inputs, targets,no_epochs):
 
         # 或者
         y_t = np.argmax(targets[test], axis=-1)
+        auc_score = roc_auc_score(y_t, predict_label)
+        print('AUC:',auc_score)
         # y_t = keras.utils.to_categorical(predict_label, 2)
         # plot_conf(predict_label,y_t,['1p/19q-codeleted', '1p/19q-nocodeleted'])
         print(classification_report(y_t, predict_label, digits=4))
