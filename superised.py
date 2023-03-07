@@ -20,11 +20,12 @@ import os
 from feature_selection import filter_method as ft
 from sklearn import svm
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import classification_report
+from sklearn.metrics import classification_report, roc_auc_score
 from sklearn.naive_bayes import GaussianNB
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.tree import DecisionTreeClassifier
+from sklearn.model_selection import KFold,cross_val_score
 
 def valtrail():
     df = pd.read_csv('./data-addxz.csv')
@@ -318,9 +319,9 @@ def test_predictknn(trainValue,labels,testValue):
     neigh =KNeighborsClassifier(n_neighbors=3)
 
     neigh.fit(trainValue,labels)
-    predicttrainlabel = neigh.predict(trainValue)
+    # predicttrainlabel = neigh.predict(trainValue)
     label = neigh.predict(testValue)
-    return label,predicttrainlabel
+    return label
 
 def test_predictDecisionTree(trainValue,labels,testValue):
 
@@ -341,15 +342,15 @@ def test_predictRandomForest(trains,labels,tests):
     clf = RandomForestClassifier(random_state=0)
     clf.fit(trains, labels)
     #train
-    predicttrainlabel = clf.predict(trains)
+    # predicttrainlabel = clf.predict(trains)
     label = clf.predict(tests)
-    return label,predicttrainlabel
+    return label
 
-def test_predictSVM(trainValue,labels,testValue):
+def test_predictSVM(trainValue,labels,tests):
 
     clf = svm.SVC(gamma=0.001)
     clf.fit(trainValue, labels)
-    label = clf.predict(testValue)
+    label = clf.predict(tests)
     return label
 
 if __name__ == '__main__':
@@ -357,10 +358,36 @@ if __name__ == '__main__':
     # b = BackwardElimination()
     #c = ExhaustiveFeaturewrapper()
     #a = mutualfilter()
-    trainValue,labels,testValue,testlabels = gettestdata('Univariate')
-    predictlabel = test_predictSVM(trainValue,labels,testValue)
-    #print(predicttrainlabel)
-    print(classification_report(testlabels,predictlabel))
+    kfold = KFold(n_splits=5, shuffle=True)
+
+    df = pd.read_csv('./data-addxz.csv')
+
+    df_case = pd.read_csv('./TCIA_LGG_cases_159.csv')
+    df['label'] = df_case['label']
+
+    dataframe = df.replace([np.inf, -np.inf], np.nan).dropna()
+    label = dataframe.pop('label')
+
+    # x = obtainNewData('mutualfilter')
+    # dataframe = x.copy()
+    # targets = dataframe.pop('label')
+    inputs = dataframe.values
+    input_s = np.array(inputs)
+
+    target_label = np.array(label)
+    # from sklearn.model_selection import cross_val_score
+
+    # scores = test_predictSVM(inputs, targets)
+    # trainValue,labels,testValue,testlabels = gettestdata('Univariate')
+    for train, test in kfold.split(input_s, target_label):
+        trainx = input_s[train]
+        ylabel = target_label[train]
+
+        predictlabel = test_predictknn(input_s[train], target_label[train],input_s[test])
+        auc_score = roc_auc_score(target_label[test], predictlabel)
+        print('AUC:', auc_score)
+    # #print(predicttrainlabel)
+        print(classification_report(target_label[test],predictlabel))
     #ddValue,ydd,nnValue,ynn = obtainNewData()
     #ytrain = np.append(ydd,ynn)
     #print(ytrain)
