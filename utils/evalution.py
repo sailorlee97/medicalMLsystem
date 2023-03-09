@@ -92,3 +92,35 @@ def roc(labels, scores, saveto=None,save = False):
 def auprc(labels, scores):
     ap = average_precision_score(labels.cpu(), scores.cpu())
     return ap
+
+
+def multi_models_roc(names, colors, fpr_all , tpr_all, save=True, dpin=500):
+    """
+    将多个机器模型的roc图输出到一张图上
+
+    Args:
+        names: list, 多个模型的名称
+        save: 选择是否将结果保存（默认为png格式）
+
+    Returns:
+        返回图片对象plt
+    """
+    plt.figure(figsize=(10, 10), dpi=500)
+
+    for (name, fpr, tpr, colorname) in zip(names, fpr_all, tpr_all, colors):
+        # fpr, tpr, thresholds = roc_curve(y_label, y_pred, pos_label=1)
+
+        plt.plot(fpr, tpr, lw=2,label='{} (AUC={:.3f})'.format(name, auc(fpr, tpr)), color=colorname)
+        plt.plot([0, 1], [0, 1], '--', lw=1, color='grey')
+        plt.axis('square')
+        plt.xlim([0, 1])  # 设置x、y轴的上下限，设置宽一点，以免和边缘重合，可以更好的观察图像的整体
+        plt.ylim([0, 1.05])
+        plt.xlabel('False Positive Rate', fontsize=20)
+        plt.ylabel('True Positive Rate', fontsize=20)
+        plt.title('ROC Curve', fontsize=25)
+        plt.legend(loc='lower right', fontsize=20)
+
+    if save:
+        plt.savefig('multi_models_roc.png')
+
+    return plt
